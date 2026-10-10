@@ -6,7 +6,7 @@ typedef unsigned long long ull;
 
 #define MULTIPLES_LIMIT 100
 #define POWER_MAX       10
-#define HEX_BUF_SIZE    17   /* 16 шестнадцатеричных цифр + '\0' */
+#define HEX_BUF_SIZE    17
 
 typedef enum {
     STATUS_OK = 0,
@@ -31,7 +31,7 @@ typedef enum {
 } PrimeKind;
 
 typedef struct {
-    ull cell[POWER_MAX][POWER_MAX];   /* cell[b-1][e-1] = b^e */
+    ull cell[POWER_MAX][POWER_MAX];
 } PowerTable;
 
 static Status validate_and_parse_natural(const char *str, ull *result)
@@ -56,7 +56,6 @@ static Status validate_and_parse_natural(const char *str, ull *result)
     return STATUS_OK;
 }
 
-/* Флаг: ровно два символа, первый '-' или '/', второй - буква флага. */
 static Status parse_flag(const char *str, Flag *flag)
 {
     if (str == NULL || flag == NULL) return STATUS_NULL_POINTER;
@@ -75,9 +74,7 @@ static Status parse_flag(const char *str, Flag *flag)
     return STATUS_OK;
 }
 
-/* ---------- Логика ---------- */
 
-/* Кратные x числа из диапазона [1; 100]. */
 static Status find_multiples(ull x, unsigned *out, size_t out_size, size_t *count)
 {
     if (out == NULL || count == NULL) return STATUS_NULL_POINTER;
@@ -86,7 +83,6 @@ static Status find_multiples(ull x, unsigned *out, size_t out_size, size_t *coun
 
     size_t n = 0;
     if (x <= MULTIPLES_LIMIT) {
-        /* m <= 100 и x <= 100, поэтому m += x не переполняется */
         for (ull m = x; m <= MULTIPLES_LIMIT; m += x) {
             out[n++] = (unsigned)m;
         }
@@ -103,8 +99,7 @@ static Status check_prime(ull x, PrimeKind *kind)
     if (x == 1) { *kind = NUM_NEITHER; return STATUS_OK; }
     if (x < 4)  { *kind = NUM_PRIME;   return STATUS_OK; }
     if (x % 2 == 0 || x % 3 == 0) { *kind = NUM_COMPOSITE; return STATUS_OK; }
-
-    /* i <= x / i вместо i * i <= x: так нет переполнения */
+    
     for (ull i = 5; i <= x / i; i += 6) {
         if (x % i == 0 || x % (i + 2) == 0) {
             *kind = NUM_COMPOSITE;
@@ -115,7 +110,6 @@ static Status check_prime(ull x, PrimeKind *kind)
     return STATUS_OK;
 }
 
-/* Цифры x в системе счисления 16, от старших к младшим, без ведущих нулей. */
 static Status to_hex_digits(ull x, char *buf, size_t buf_size, size_t *len)
 {
     static const char DIGITS[] = "0123456789ABCDEF";
@@ -137,7 +131,6 @@ static Status to_hex_digits(ull x, char *buf, size_t buf_size, size_t *len)
     return STATUS_OK;
 }
 
-/* Степени b^e для b = 1..10, e = 1..x; x <= 10. */
 static Status build_power_table(ull x, PowerTable *table)
 {
     if (table == NULL) return STATUS_NULL_POINTER;
@@ -154,12 +147,11 @@ static Status build_power_table(ull x, PowerTable *table)
     return STATUS_OK;
 }
 
-/* Сумма 1..x = x*(x+1)/2 с контролем переполнения. */
 static Status sum_to(ull x, ull *result)
 {
     if (result == NULL) return STATUS_NULL_POINTER;
     if (x == 0) return STATUS_NOT_NATURAL;
-    if (x == ULLONG_MAX) return STATUS_OVERFLOW;   /* x + 1 переполнилось бы */
+    if (x == ULLONG_MAX) return STATUS_OVERFLOW;
 
     ull a = x, b = x + 1;
     if (a % 2 == 0) a /= 2; else b /= 2;
@@ -183,7 +175,6 @@ static Status factorial(ull x, ull *result)
     return STATUS_OK;
 }
 
-/* ---------- Вывод ---------- */
 
 static void print_error(Status status)
 {
@@ -277,7 +268,6 @@ static Status print_power_table(ull x, const PowerTable *table)
     return STATUS_OK;
 }
 
-/* ---------- Выполнение действия ---------- */
 
 static Status run_action(Flag flag, ull x)
 {
@@ -326,7 +316,6 @@ static Status run_action(Flag flag, ull x)
     return st;
 }
 
-/* ---------- main ---------- */
 
 int main(int argc, char *argv[])
 {
